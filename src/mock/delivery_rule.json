@@ -1,0 +1,66 @@
+[
+  {
+    "conditions": {
+      "all": [
+        { "fact": "distance", "operator": "lessThan", "value": 3 },
+        { "fact": "orderAmount", "operator": "lessThan", "value": 200000 }
+      ]
+    },
+    "event": { "type": "fixedRate", "params": { "ratePerKm": 10000 } }
+  },
+  {
+    "conditions": {
+      "all": [
+        { "fact": "distance", "operator": "lessThan", "value": 3 },
+        { "fact": "orderAmount", "operator": "greaterThanInclusive", "value": 200000 }
+      ]
+    },
+    "event": { "type": "fixedRate", "params": { "ratePerKm": 10000 } }
+  },
+  {
+    "conditions": {
+      "all": [
+        { "fact": "distance", "operator": "greaterThanInclusive", "value": 3 },
+        { "fact": "distance", "operator": "lessThan", "value": 10 },
+        { "fact": "orderAmount", "operator": "lessThan", "value": 200000 }
+      ]
+    },
+    "event": {
+      "type": "mixedRate",
+      "params": {
+        "firstKm": 3,
+        "firstRate": 10000,
+        "extraRate": 5000
+      }
+    }
+  },
+  {
+    "conditions": {
+      "all": [
+        { "fact": "distance", "operator": "greaterThanInclusive", "value": 3 },
+        { "fact": "distance", "operator": "lessThan", "value": 10 },
+        { "fact": "orderAmount", "operator": "greaterThanInclusive", "value": 200000 }
+      ]
+    },
+    "event": {
+      "type": "mixedRate",
+      "params": {
+        "firstKm": 3,
+        "firstRate": 10000,
+        "extraRate": 5000
+      }
+    }
+  },
+  {
+    "conditions": {
+      "all": [
+        { "fact": "distance", "operator": "greaterThanInclusive", "value": 10 },
+        { "fact": "orderAmount", "operator": "greaterThanInclusive", "value": 500000 }
+      ]
+    },
+    "event": {
+      "type": "fixedRate",
+      "params": { "ratePerKm": 8000 }
+    }
+  }
+]
