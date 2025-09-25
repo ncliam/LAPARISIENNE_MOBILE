@@ -70,7 +70,7 @@ export default function CartItem(props: CartItemProps) {
           <div className="text-sm">{props.product.name}</div>
           <div className="flex flex-col">
             <div className="text-sm font-bold">
-              {formatPrice(props.product.price)}
+              {formatPrice(props.unitprice)}
             </div>
             {props.product.originalPrice && (
               <div className="line-through text-subtitle text-4xs">
