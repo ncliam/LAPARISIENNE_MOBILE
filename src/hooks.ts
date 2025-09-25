@@ -12,13 +12,15 @@ import {
   shippingAddressState,
   allOrdersState,
   deliveryFeeState,
-  savedSessionState
+  sessionState
 } from "@/state";
 import { Product } from "@/types";
 import { getConfig } from "@/utils/template";
-import { authorize, openChat, getSetting, Payment, CheckoutSDK } from "zmp-sdk";
+import { authorize, openChat, getSetting, Payment, CheckoutSDK, getPhoneNumber } from "zmp-sdk";
 import { useAtomCallback } from "jotai/utils";
-import { requestWithPost } from "@/utils/request";
+import { requestWithPost, requestWithFallback } from "@/utils/request";
+import { getAccessToken } from "zmp-sdk/apis";
+
 
 export function useRealHeight(
   element: MutableRefObject<HTMLDivElement | null>,
@@ -164,25 +166,50 @@ async function createOrder(cart, delivery, sessionInfo) {
   );
 }
 
-export function useCheckout() {
+export function useKyc() {
+  const setSession = useSetAtom(sessionState);
   return async () => {
+    const accessToken = await getAccessToken();
+    const { token } = await getPhoneNumber({});
+    const sessionInfo = await requestWithFallback<any>("/authenticate",
+      {},
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Zalo-AccessToken": accessToken || "dummy",
+          "X-Zalo-PhoneToken": token || "dummy",
+        },
+      }
+    );
+    if (Object.keys(sessionInfo).length > 0) {
+        setSession(sessionInfo);
+    } else {
+        setSession(null);
+    }
+  }
+}
+
+export function useCheckout() {
     const [cart, setCart] = useAtom(cartState);
     const requestInfo = useRequestInformation();
     const deliveryMode = useAtomValue(deliveryModeState); // "shipping" or other modes
     const selectedStation = useAtomValue(selectedStationState); // Selected station info
     const shippingAddress = useAtomValue(shippingAddressState); // Shipping address if delivery mode is "shipping"
     const refreshNewOrders = useSetAtom(allOrdersState);
-    const totalAmount = useAtomValue(cartTotalState).totalAmount; // Total amount of the cart
-    const deliveryFee = useAtomValue(deliveryFeeState); // Delivery fee
-    const sessionInfo = useAtomValue(savedSessionState); // User session
-
+    const cartTotal = useAtomValue(cartTotalState); // Total amount of the cart
+    // const deliveryFee = useAtomValue(deliveryFeeState); // Delivery fee
+    const sessionInfo = useAtomValue(sessionState); // User session
+    const navigate = useNavigate();
+    
+  return async () => {
     const delivery =  {
       mode: deliveryMode,
       station: selectedStation,
       address: shippingAddress,
-      fee: deliveryFee
+      fee: 0 //deliveryFee
     }
-    const navigate = useNavigate();
+    
     try {
       if (!selectedStation) {
         toast.error("Bạn chưa chọn cửa hàng nào", {
@@ -220,7 +247,7 @@ export function useCheckout() {
 
       CheckoutSDK.purchase({
         desc: "Thanh toán COD",
-        amount: totalAmount,
+        amount: cartTotal.totalAmount,
         method: "COD",
         success: async(data) => {
           // Tạo đơn hàng thành công

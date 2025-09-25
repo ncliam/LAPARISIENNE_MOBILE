@@ -1,4 +1,4 @@
-import { atom, getDefaultStore } from "jotai";
+import { atom } from "jotai";
 import { atomFamily, atomWithStorage, atomWithRefresh, loadable, unwrap } from "jotai/utils";
 import {
   Cart,
@@ -13,16 +13,16 @@ import {
   UserInfo,
 } from "@/types";
 import { requestWithFallback } from "@/utils/request";
-import { getLocation, getPhoneNumber, getSetting, getUserInfo } from "zmp-sdk";
+import { getLocation, getSetting, getUserInfo } from "zmp-sdk";
 import { calculateDistance } from "./utils/location";
 import CONFIG from "./config";
 import { getAccessToken } from "zmp-sdk/apis";
 import { Engine } from 'json-rules-engine';
 
-const defaultStore = getDefaultStore();
+
 export const userInfoKeyState = atom(0);
 
-export const userInfoState = atom<Promise<UserInfo>>(async () => {
+export const userInfoState = atom<Promise<UserInfo>>(async (get) => {
   const savedUserInfo = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_INFO);
   if (savedUserInfo) {
     return JSON.parse(savedUserInfo);
@@ -38,13 +38,14 @@ export const userInfoState = atom<Promise<UserInfo>>(async () => {
   if (grantedUserInfo || isDev) {
     // Người dùng cho phép truy cập tên và ảnh đại diện
     const { userInfo } = await getUserInfo({});
-    
+    const sessionInfo = get(sessionState);
     return {
       id: userInfo.id,
       name: userInfo.name,
       avatar: userInfo.avatar,
       email: "",
       address: "",
+      session: sessionInfo
     };
   }
 });
@@ -191,35 +192,7 @@ export const shippingAddressState = atomWithStorage<
   ShippingAddress | undefined
 >(CONFIG.STORAGE_KEYS.SHIPPING_ADDRESS, undefined);
 
-export const savedSessionState = atomWithStorage<any>(CONFIG.STORAGE_KEYS.SESSION, null);
-
-export const sessionState = atom(async (get) => {
-  const cachedSession = get(savedSessionState);
-  if (!!cachedSession) {
-    return cachedSession;
-  }
-
-  const accessToken = await getAccessToken();
-  const { token } = await getPhoneNumber({});
-  let sessionInfo = await requestWithFallback<any>(
-    "/authenticate",
-    {},
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Zalo-AccessToken": accessToken || "dummy",
-        "X-Zalo-PhoneToken": token || "dummy",
-      },
-    }
-  );
-  sessionInfo = sessionInfo || {};
-  if (Object.keys(sessionInfo).length === 0) {
-      defaultStore.set(savedSessionState, sessionInfo);
-      return sessionInfo
-  }
-  return null;
-});
+export const sessionState = atomWithStorage<any>(CONFIG.STORAGE_KEYS.SESSION, null);
 
 export const allOrdersState = atomWithRefresh(async (get) => {
     const sessionInfo = await get(sessionState);

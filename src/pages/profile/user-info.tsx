@@ -3,9 +3,12 @@ import { loadableUserInfoState } from "@/state";
 import { useAtomValue } from "jotai";
 import { PropsWithChildren } from "react";
 import Register from "./register";
+import { useKyc } from "@/hooks";
+import { Button } from "zmp-ui";
 
 function UserInfo({ children }: PropsWithChildren) {
   const userInfo = useAtomValue(loadableUserInfoState);
+  const kyc = useKyc();
   if (userInfo.state === "hasData" && userInfo.data) {
     const { name, avatar } = userInfo.data;
     return (
@@ -16,6 +19,15 @@ function UserInfo({ children }: PropsWithChildren) {
             <div className="text-lg truncate">{name}</div>
           </div>
         </div>
+        <Button onClick={async () => {
+          await kyc();
+        }}
+            variant="primary"
+            size="medium"
+            fullWidth
+            className="mt-3">
+        Cập nhật chính sách
+      </Button>
         {children}
       </>
     );

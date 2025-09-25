@@ -1,5 +1,5 @@
 import {
-  savedSessionState,
+  sessionState,
   userInfoState
 } from "@/state";
 import { useAtomValue } from "jotai";
@@ -7,10 +7,12 @@ import QRcode from "react-qr-code";
 import barcodeIllusLeft from "@/static/barcode-illus-left.svg";
 import barcodeIllusRight from "@/static/barcode-illus-right.svg";
 
+
 export default function Points() {
   const userInfo = useAtomValue(userInfoState);
-  const sessionInfo = useAtomValue(savedSessionState);
-  return (sessionInfo && sessionInfo.login && (
+  const sessionInfo = useAtomValue(sessionState);
+
+  return (sessionInfo && (
     <div
       className="rounded-lg bg-primary text-white p-8 pt-6 bg-cover text-center"
       style={{
