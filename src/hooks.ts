@@ -12,7 +12,7 @@ import {
   shippingAddressState,
   allOrdersState,
   deliveryFeeState,
-  savedSessionState
+  sessionState
 } from "@/state";
 import { Product } from "@/types";
 import { getConfig } from "@/utils/template";
@@ -179,7 +179,7 @@ export function useCheckout() {
   const refreshNewOrders = useSetAtom(allOrdersState);
   const totalAmount = useAtomValue(cartTotalState).totalAmount; // Total amount of the cart
   const deliveryFee = useAtomValue(deliveryFeeState); // Delivery fee
-  const sessionInfo = useAtomValue(savedSessionState); // User session
+  const sessionInfo = useAtomValue(sessionState); // User session
 
   const delivery =  {
     mode: deliveryMode,
