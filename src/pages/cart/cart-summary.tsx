@@ -24,7 +24,7 @@ export default function CartSummary() {
         </table>
         <HorizontalDivider />
         <div className="flex justify-between font-medium text-sm">
-          <div>Tổng thanh toán</div>
+          <div>Tổng cộng</div>
           <div>{formatPrice(totalAmount)}</div>
         </div>
       </div>

@@ -50,7 +50,7 @@ export default function CartItem(props: CartItemProps) {
 
   return (
     <div className="relative after:border-b-[0.5px] after:border-black/10 after:absolute after:left-[88px] after:right-0 after:bottom-0 last:after:hidden">
-      <div className="absolute right-0 top-0 bottom-0 w-20 py-px">
+      {/* <div className="absolute right-0 top-0 bottom-0 w-20 py-px">
         <div
           className="bg-danger text-white/95 w-full h-full flex flex-col space-y-1 justify-center items-center cursor-pointer"
           onClick={() => addToCart(0)}
@@ -58,13 +58,14 @@ export default function CartItem(props: CartItemProps) {
           <Icon icon="zi-delete" />
           <div className="text-2xs font-medium">Xoá</div>
         </div>
-      </div>
+      </div> */}
 
-      <animated.div
+      {/* <animated.div
         {...bind()}
         style={{ x }}
         className="bg-white p-4 flex items-center space-x-4 relative"
-      >
+      > */}
+      <div className="bg-white p-4 flex items-center space-x-4 relative">
         <img src={props.product.image} className="w-14 h-14 rounded-lg" />
         <div className="flex-1 space-y-1">
           <div className="text-sm">{props.product.name}</div>
@@ -82,7 +83,8 @@ export default function CartItem(props: CartItemProps) {
         <div>
         <QuantityInput value={cartQuantity} onChange={addToCart} />
         </div>
-      </animated.div>
+      </div>
+      {/* </animated.div> */}
       
     </div>
   );

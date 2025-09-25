@@ -12,7 +12,7 @@ import {
   shippingAddressState,
   allOrdersState,
   deliveryFeeState,
-  sessionState
+  savedSessionState
 } from "@/state";
 import { Product } from "@/types";
 import { getConfig } from "@/utils/template";
@@ -63,21 +63,17 @@ export function useRequestInformation() {
 
 export function computePriceByQuantity(product: Product, quantity: number) {
   let price = product.price;
-  // const session_info = {
-  //   priceLevel: 1
-  // }
-  // function findPriceByQuantity(sortedData, quantity) {
-  //   return sortedData.find(item => quantity >= item.min_qty) || null;
-  // }
-
-  // const priceList = product.priceLevels[session_info.priceLevel];
-  // if (priceList) {
-  //   const sortedPrices = [...priceList].sort((a, b) => b.min_qty - a.min_qty);
-  //   const matchedPrice = findPriceByQuantity(sortedPrices, quantity);
-  //   if (matchedPrice) {
-  //     price = matchedPrice.price;
-  //   }
-  // }
+  const session_info = {
+    priceLevel: 1
+  }
+  const priceList = product.priceLevels[session_info.priceLevel];
+  if (priceList) {
+    const sortedPrices = [...priceList].sort((a, b) => b.min_qty - a.min_qty);
+    const matchedPrice = sortedPrices.find(item => quantity >= item.min_qty) || null;
+    if (matchedPrice) {
+      price = matchedPrice.price;
+    }
+  }
 
   return price;
 } 
@@ -168,27 +164,25 @@ async function createOrder(cart, delivery, sessionInfo) {
   );
 }
 
-
 export function useCheckout() {
-  const [cart, setCart] = useAtom(cartState);
-  const requestInfo = useRequestInformation();
-  const deliveryMode = useAtomValue(deliveryModeState); // "shipping" or other modes
-  const selectedStation = useAtomValue(selectedStationState); // Selected station info
-  const shippingAddress = useAtomValue(shippingAddressState); // Shipping address if delivery mode is "shipping"
-  const refreshNewOrders = useSetAtom(allOrdersState);
-  const totalAmount = useAtomValue(cartTotalState).totalAmount; // Total amount of the cart
-  const deliveryFee = useAtomValue(deliveryFeeState); // Delivery fee
-  const sessionInfo = useAtomValue(sessionState); // User session
-
-  const delivery =  {
-    mode: deliveryMode,
-    station: selectedStation,
-    address: shippingAddress,
-    fee: deliveryFee
-  }
-  const navigate = useNavigate();
-
   return async () => {
+    const [cart, setCart] = useAtom(cartState);
+    const requestInfo = useRequestInformation();
+    const deliveryMode = useAtomValue(deliveryModeState); // "shipping" or other modes
+    const selectedStation = useAtomValue(selectedStationState); // Selected station info
+    const shippingAddress = useAtomValue(shippingAddressState); // Shipping address if delivery mode is "shipping"
+    const refreshNewOrders = useSetAtom(allOrdersState);
+    const totalAmount = useAtomValue(cartTotalState).totalAmount; // Total amount of the cart
+    const deliveryFee = useAtomValue(deliveryFeeState); // Delivery fee
+    const sessionInfo = useAtomValue(savedSessionState); // User session
+
+    const delivery =  {
+      mode: deliveryMode,
+      station: selectedStation,
+      address: shippingAddress,
+      fee: deliveryFee
+    }
+    const navigate = useNavigate();
     try {
       if (!selectedStation) {
         toast.error("Bạn chưa chọn cửa hàng nào", {

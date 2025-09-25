@@ -104,7 +104,7 @@ function ShippingAddressPage() {
           />
           
         </div>
-        <div className="bg-section p-4 grid gap-4">
+        {/* <div className="bg-section p-4 grid gap-4">
           <Switch
             label="Mang lên tầng"
             checked={formAddress?.toRoom ? true : false }
@@ -138,7 +138,7 @@ function ShippingAddressPage() {
             ))}
             </OtpGroup>
           </Select>
-        </div>
+        </div> */}
         
 
         <Button
