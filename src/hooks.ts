@@ -16,10 +16,9 @@ import {
 } from "@/state";
 import { Product } from "@/types";
 import { getConfig } from "@/utils/template";
-import { authorize, openChat, getPhoneNumber, getSetting, Payment, CheckoutSDK } from "zmp-sdk";
+import { authorize, openChat, getSetting, Payment, CheckoutSDK } from "zmp-sdk";
 import { useAtomCallback } from "jotai/utils";
 import { requestWithPost } from "@/utils/request";
-import { getAccessToken } from "zmp-sdk/apis";
 
 export function useRealHeight(
   element: MutableRefObject<HTMLDivElement | null>,
