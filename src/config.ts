@@ -4,6 +4,7 @@ const CONFIG = {
     DELIVERY: "delivery",
     SHIPPING_ADDRESS: "shippingAddress",
     STATION: "station",
+    SESSION: "session",
   },
 };
 

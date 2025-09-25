@@ -12,7 +12,7 @@ import {
   shippingAddressState,
   allOrdersState,
   deliveryFeeState,
-  sessionState
+  savedSessionState
 } from "@/state";
 import { Product } from "@/types";
 import { getConfig } from "@/utils/template";
@@ -155,7 +155,7 @@ export function useCheckout() {
   const refreshNewOrders = useSetAtom(allOrdersState);
   const totalAmount = useAtomValue(cartTotalState).totalAmount; // Total amount of the cart
   const deliveryFee = useAtomValue(deliveryFeeState); // Delivery fee
-  const sessionInfo = useAtomValue(sessionState); // User session
+  const sessionInfo = useAtomValue(savedSessionState); // User session
 
   const delivery =  {
     mode: deliveryMode,
@@ -182,8 +182,7 @@ export function useCheckout() {
       await requestInfo();
       const {
         authSetting: {
-          "scope.userInfo": grantedUserInfo,
-          "scope.userPhonenumber": grantedPhoneNumber,
+          "scope.userInfo": grantedUserInfo
         },
       } = await getSetting({});
       if (!grantedUserInfo) {

@@ -1,4 +1,4 @@
-import { atom } from "jotai";
+import { atom, getDefaultStore } from "jotai";
 import { atomFamily, atomWithStorage, atomWithRefresh, loadable, unwrap } from "jotai/utils";
 import {
   Cart,
@@ -19,9 +19,8 @@ import CONFIG from "./config";
 import { getAccessToken } from "zmp-sdk/apis";
 import { Engine } from 'json-rules-engine';
 
-
+const defaultStore = getDefaultStore();
 export const userInfoKeyState = atom(0);
-
 
 export const userInfoState = atom<Promise<UserInfo>>(async () => {
   const savedUserInfo = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_INFO);
@@ -192,9 +191,41 @@ export const shippingAddressState = atomWithStorage<
   ShippingAddress | undefined
 >(CONFIG.STORAGE_KEYS.SHIPPING_ADDRESS, undefined);
 
+export const savedSessionState = atomWithStorage<any>(CONFIG.STORAGE_KEYS.SESSION, null);
+
+export const sessionState = atom(async (get) => {
+  const cachedSession = get(savedSessionState);
+  if (!!cachedSession) {
+    return cachedSession;
+  }
+
+  const accessToken = await getAccessToken();
+  const { token } = await getPhoneNumber({});
+  let sessionInfo = await requestWithFallback<any>(
+    "/authenticate",
+    {},
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Zalo-AccessToken": accessToken || "dummy",
+        "X-Zalo-PhoneToken": token || "dummy",
+      },
+    }
+  );
+  sessionInfo = sessionInfo || {};
+  if (Object.keys(sessionInfo).length === 0) {
+      defaultStore.set(savedSessionState, sessionInfo);
+      return sessionInfo
+  }
+  return null;
+});
 
 export const allOrdersState = atomWithRefresh(async (get) => {
     const sessionInfo = await get(sessionState);
+    if (!sessionInfo)
+      return [];
+
     const allOrders = await requestWithFallback<Order[]>("/orders", [], {
       headers: {
           "Content-Type": "application/json",
@@ -276,16 +307,3 @@ export const deliveryFeeState = atom(async (get) => {
   return deliveryFee; // Trả về phí giao hàng
 });
 
-export const sessionState = atom(async () => {
-  const accessToken = await getAccessToken()
-  const { token } = await getPhoneNumber({});
-  const sessionInfo = await requestWithFallback<{}>("/authenticate", {}, {
-      method: 'POST',
-      headers: {
-        "Content-Type": "application/json",
-        "X-Zalo-AccessToken": accessToken || 'dummy',
-        "X-Zalo-PhoneToken": token || 'dummy',
-    },
-    });
-  return sessionInfo;
-});
