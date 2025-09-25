@@ -95,7 +95,7 @@ export default function ProductItem(props: ProductItemProps) {
             onClick={(e) => {
               e.stopPropagation();
               handleQuantityChange(1, {
-                toast: true,
+                toast: false,
               });
             }}
           >

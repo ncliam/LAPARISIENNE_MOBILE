@@ -31,9 +31,9 @@ function FloatingCartPreview() {
         <CartIcon mono />
       </Badge> */}
       <span className="text-base font-medium flex-1">
-        {totalItems} chiếc
+        {totalItems} sản phẩm
       </span>
-      <span className="text-sm">Đặt đơn</span>
+      <span className="text-sm">Xem đơn</span>
     </TransitionLink>
   );
 }

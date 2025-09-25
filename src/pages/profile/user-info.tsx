@@ -7,7 +7,7 @@ import Register from "./register";
 function UserInfo({ children }: PropsWithChildren) {
   const userInfo = useAtomValue(loadableUserInfoState);
   if (userInfo.state === "hasData" && userInfo.data) {
-    const { name, avatar, phone } = userInfo.data;
+    const { name, avatar } = userInfo.data;
     return (
       <>
         <div className="bg-section rounded-lg p-4 flex items-center space-x-4 border-[0.5px] border-black/15">
