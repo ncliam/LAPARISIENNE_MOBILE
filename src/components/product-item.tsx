@@ -1,9 +1,9 @@
 import { Product } from "@/types";
 import { formatPrice } from "@/utils/format";
 import TransitionLink from "./transition-link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "zmp-ui";
-import { useAddToCart } from "@/hooks";
+import { computePriceByQuantity, useAddToCart } from "@/hooks";
 import QuantityInput from "./quantity-input";
 
 export interface ProductItemProps {
@@ -18,6 +18,19 @@ export interface ProductItemProps {
 export default function ProductItem(props: ProductItemProps) {
   const [selected, setSelected] = useState(false);
   const { addToCart, cartQuantity } = useAddToCart(props.product);
+  const displayedPrice = useMemo(() => {
+    if (cartQuantity === 0) {
+      return props.product.price;
+    }
+    return computePriceByQuantity(props.product, cartQuantity);
+  }, [cartQuantity, props.product]);
+
+  const handleQuantityChange = (
+    quantity: number,
+    options?: { toast: boolean }
+  ) => {
+    addToCart(quantity, options);
+  };
 
   return (
     <div
@@ -49,9 +62,9 @@ export default function ProductItem(props: ProductItemProps) {
                 </div>
               </div>
               <div className="mt-0.5 text-sm font-bold text-primary truncate">
-                {formatPrice(props.product.price)}
+                {formatPrice(displayedPrice)}
               </div>
-              {props.product.originalPrice && (
+              {displayedPrice !== props.product.originalPrice ? (
                 <div className="text-3xs space-x-0.5 truncate">
                   <span className="text-subtitle line-through">
                     {formatPrice(props.product.originalPrice)}
@@ -60,12 +73,14 @@ export default function ProductItem(props: ProductItemProps) {
                     -
                     {100 -
                       Math.round(
-                        (props.product.price * 100) /
+                        (displayedPrice * 100) /
                           props.product.originalPrice
                       )}
                     %
                   </span>
                 </div>
+              ) : (
+                <div className="text-3xs space-x-0.5 truncate"><span>&nbsp;</span></div>
               )}
             </div>
           </>
@@ -79,7 +94,7 @@ export default function ProductItem(props: ProductItemProps) {
             fullWidth
             onClick={(e) => {
               e.stopPropagation();
-              addToCart(1, {
+              handleQuantityChange(1, {
                 toast: true,
               });
             }}
@@ -87,7 +102,7 @@ export default function ProductItem(props: ProductItemProps) {
             Thêm vào giỏ
           </Button>
         ) : (
-          <QuantityInput value={cartQuantity} onChange={addToCart} />
+          <QuantityInput value={cartQuantity} onChange={handleQuantityChange} />
         )}
       </div>
     </div>

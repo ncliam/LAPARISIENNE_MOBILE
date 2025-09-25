@@ -12,12 +12,13 @@ export interface Product {
   ref: string;
   name: string;
   price: number;
-  originalPrice?: number;
+  originalPrice: number;
   image: string;
   category: Category;
   detail?: string;
   sizes?: Size[];
   colors?: Color[];
+  priceLevels: {};
 }
 
 export interface Category {
@@ -30,7 +31,7 @@ export interface Category {
 export interface CartItem {
   product: Product;
   quantity: number;
-  unitprice?: number;
+  unitprice: number;
   detail?: string;
 }
 

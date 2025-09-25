@@ -62,6 +62,27 @@ export function useRequestInformation() {
   };
 }
 
+export function computePriceByQuantity(product: Product, quantity: number) {
+  let price = product.price;
+  const session_info = {
+    priceLevel: 1
+  }
+  function findPriceByQuantity(sortedData, quantity) {
+    return sortedData.find(item => quantity >= item.min_qty) || null;
+  }
+
+  const priceList = product.priceLevels[session_info.priceLevel];
+  if (priceList) {
+    const sortedPrices = [...priceList].sort((a, b) => b.min_qty - a.min_qty);
+    const matchedPrice = findPriceByQuantity(sortedPrices, quantity);
+    if (matchedPrice) {
+      price = matchedPrice.price;
+    }
+  }
+
+  return price;
+} 
+
 export function useAddToCart(product: Product) {
   const [cart, setCart] = useAtom(cartState);
 
@@ -82,11 +103,14 @@ export function useAddToCart(product: Product) {
       if (newQuantity <= 0) {
         cart.splice(cart.indexOf(currentCartItem!), 1);
       } else {
+        const newPrice = computePriceByQuantity(product, newQuantity);
         if (currentCartItem) {
           currentCartItem.quantity = newQuantity;
+          currentCartItem.unitprice = newPrice;
         } else {
           cart.push({
             product,
+            unitprice: newPrice,
             quantity: newQuantity,
           });
         }
