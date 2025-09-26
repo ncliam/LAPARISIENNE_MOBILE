@@ -50,6 +50,7 @@ export function useRequestInformation() {
     const userInfo = await get(userInfoState);
     return !!userInfo;
   });
+  const kyc = useKyc();
   const setInfoKey = useSetAtom(userInfoKeyState);
   const refreshPermissions = () => setInfoKey((key) => key + 1);
 
@@ -59,7 +60,9 @@ export function useRequestInformation() {
       await authorize({
         scopes: ["scope.userInfo", "scope.userPhonenumber"],
       }).then(refreshPermissions);
+      kyc();
     }
+    
   };
 }
 

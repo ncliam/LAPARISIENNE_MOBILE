@@ -38,14 +38,12 @@ export const userInfoState = atom<Promise<UserInfo>>(async (get) => {
   if (grantedUserInfo || isDev) {
     // Người dùng cho phép truy cập tên và ảnh đại diện
     const { userInfo } = await getUserInfo({});
-    const sessionInfo = get(sessionState);
     return {
       id: userInfo.id,
       name: userInfo.name,
       avatar: userInfo.avatar,
       email: "",
-      address: "",
-      session: sessionInfo
+      address: ""
     };
   }
 });

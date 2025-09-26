@@ -1,5 +1,3 @@
-import ProfileActions from "./actions";
-import FollowOA from "./follow-oa";
 import Points from "./points";
 import UserInfo from "./user-info";
 import Delivery from "../cart/delivery";
@@ -12,8 +10,6 @@ export default function ProfilePage() {
         <Points />
         <Delivery />
       </UserInfo>
-      <ProfileActions />
-      <FollowOA />
     </div>
   );
 }
