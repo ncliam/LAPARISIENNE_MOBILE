@@ -63,25 +63,26 @@ export function useRequestInformation() {
   };
 }
 
-export function computePriceByQuantity(product: Product, quantity: number) {
-  let price = product.price;
-  const session_info = {
-    priceLevel: 1
-  }
-  const priceList = product.priceLevels[session_info.priceLevel];
-  if (priceList) {
-    const sortedPrices = [...priceList].sort((a, b) => b.min_qty - a.min_qty);
-    const matchedPrice = sortedPrices.find(item => quantity >= item.min_qty) || null;
-    if (matchedPrice) {
-      price = matchedPrice.price;
+export function useComputePrice() {
+  const session_info = useAtomValue(sessionState);
+  return (product: Product, quantity: number) => {
+    let price = product.price;
+    const pricelist_id = session_info?.property_product_pricelist;
+    if (pricelist_id) {
+      const priceLevels = product.priceLevels[pricelist_id[0]];
+      const sortedPrices = [...priceLevels].sort((a, b) => b.min_qty - a.min_qty);
+      const matchedPrice = sortedPrices.find(item => quantity >= item.min_qty) || null;
+      if (matchedPrice) {
+        price = matchedPrice.price;
+      }
     }
+    return price;
   }
-
-  return price;
 } 
 
 export function useAddToCart(product: Product) {
   const [cart, setCart] = useAtom(cartState);
+  const computePrice = useComputePrice();
 
   const currentCartItem = useMemo(
     () => cart.find((item) => item.product.id === product.id),
@@ -100,7 +101,7 @@ export function useAddToCart(product: Product) {
       if (newQuantity <= 0) {
         cart.splice(cart.indexOf(currentCartItem!), 1);
       } else {
-        const newPrice = computePriceByQuantity(product, newQuantity);
+        const newPrice = computePrice(product, newQuantity);
         if (currentCartItem) {
           currentCartItem.quantity = newQuantity;
           currentCartItem.unitprice = newPrice;
@@ -141,9 +142,9 @@ async function createOrder(cart, delivery, sessionInfo) {
   const path = "/orders"; // API endpoint
   // Get delivery-related states
   const lines = cart.map((item) => ({
-    product_ref: item.product.ref,
+    product: item.product,
     name: item.product.name,
-    price: item.product.price,
+    unitprice: item.unitprice,
     quantity: item.quantity,
   }));
   const payload = {

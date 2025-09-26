@@ -9,7 +9,7 @@ function OrderItem(props: CartItem) {
   return (
     <List.Item
       prefix={
-        (<Icon icon="zi-bookmark" />)
+        <img src={props.product.image} className="w-14 h-14 rounded-lg" />
       }
       suffix={
         <div className="text-sm font-medium flex items-center h-full">

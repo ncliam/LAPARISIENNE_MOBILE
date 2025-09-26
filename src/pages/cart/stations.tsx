@@ -1,5 +1,5 @@
 import { StationSkeleton } from "@/components/skeleton";
-import { stationStateWithDistance, savedStationState, selectedStationState } from "@/state";
+import { stationsState, savedStationState, selectedStationState } from "@/state";
 import type { Station } from "@/types";
 import { useAtomValue, useSetAtom } from "jotai";
 import { Suspense } from "react";
@@ -32,7 +32,7 @@ function Station({
 function Stations() {
   const setSelectedStation = useSetAtom(savedStationState);
   const navigate = useNavigate();
-  const stations = useAtomValue(stationStateWithDistance);
+  const stations = useAtomValue(stationsState);
   return stations.map((station, i) => (
     <Station
       key={station.id}

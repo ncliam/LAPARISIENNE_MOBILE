@@ -3,7 +3,7 @@ import { formatPrice } from "@/utils/format";
 import TransitionLink from "./transition-link";
 import { useMemo, useState } from "react";
 import { Button } from "zmp-ui";
-import { computePriceByQuantity, useAddToCart } from "@/hooks";
+import { useComputePrice, useAddToCart } from "@/hooks";
 import QuantityInput from "./quantity-input";
 
 export interface ProductItemProps {
@@ -18,11 +18,11 @@ export interface ProductItemProps {
 export default function ProductItem(props: ProductItemProps) {
   const [selected, setSelected] = useState(false);
   const { addToCart, cartQuantity } = useAddToCart(props.product);
+  const computePrice = useComputePrice();
   const displayedPrice = useMemo(() => {
-    if (cartQuantity === 0) {
-      return props.product.price;
-    }
-    return computePriceByQuantity(props.product, cartQuantity);
+    if (cartQuantity === 0)
+      return computePrice(props.product, 1);
+    return computePrice(props.product, cartQuantity);
   }, [cartQuantity, props.product]);
 
   const handleQuantityChange = (
