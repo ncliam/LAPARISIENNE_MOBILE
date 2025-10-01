@@ -88,7 +88,7 @@ export const recommendedProductsState = atom((get) => get(productsState));
 export const productState = atomFamily((id: number) =>
   atom(async (get) => {
     const products = await get(productsState);
-    return products.find((product) => product.id === id);
+    return products.find((product) => product.id == id);
   })
 );
 
