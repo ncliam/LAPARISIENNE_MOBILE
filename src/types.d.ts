@@ -19,6 +19,8 @@ export interface Product {
   sizes?: Size[];
   colors?: Color[];
   priceLevels: {};
+  combo?: boolean;
+  choices?: ComboChoice[];
 }
 
 export interface Category {
@@ -33,6 +35,7 @@ export interface CartItem {
   quantity: number;
   unitprice: number;
   detail?: string;
+  comboSelections?: ComboItem[];
 }
 
 export type Cart = CartItem[];
@@ -86,3 +89,20 @@ export interface Order {
   note: string;
   shop_order_no: string;
 }
+
+export type ComboItem = {
+  id: number;
+  extra_price: number;
+  name: string;
+  image: string;
+};
+
+export type ComboState = { 
+  currentComboIndex: number; 
+  selectedCombos: ComboItem[];
+};
+
+export type ComboChoice = {
+  name: string;
+  items: ComboItem[];
+};

@@ -6,7 +6,102 @@
     "price": 67900,
     "originalPrice": 69900,
     "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/apples.png",
-    "detail": "Táo Fuji tươi ngon, giòn và ngọt tự nhiên. Được tuyển chọn kỹ càng từ những vườn cây chất lượng cao."
+    "detail": "Táo Fuji tươi ngon, giòn và ngọt tự nhiên. Được tuyển chọn kỹ càng từ những vườn cây chất lượng cao.",
+    "combo": true,
+    "choices": [
+      {
+        "name": "Chọn loại bánh thứ nhất",
+        "items": [
+          {
+            "id": 2,
+            "extra_price": 20000,
+            "name": "Bắp cải xanh tươi - 300g",
+            "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/cabbage.png"
+          },
+          {
+            "id": 3,
+            "extra_price": 0,
+            "name": "Kem sô cô la mát lạnh - 500ml",
+            "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/creamy.png"
+          },
+          {
+            "id": 4,
+            "extra_price": 0,
+            "name": "Bánh quy bơ Danisa - 200g",
+            "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/danisa.png"
+          }
+        ]
+      },
+      {
+        "name": "Chọn loại bánh thứ 2",
+        "items": [
+          {
+            "id": 2,
+            "extra_price": 20000,
+            "name": "Bắp cải xanh tươi - 300g",
+            "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/cabbage.png"
+          },
+          {
+            "id": 3,
+            "extra_price": 0,
+            "name": "Kem sô cô la mát lạnh - 500ml",
+            "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/creamy.png"
+          },
+          {
+            "id": 4,
+            "extra_price": 0,
+            "name": "Bánh quy bơ Danisa - 200g",
+            "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/danisa.png"
+          }
+        ]
+      },
+      {
+        "name": "Chọn loại bánh thứ 3",
+        "items": [
+          {
+            "id": 2,
+            "extra_price": 20000,
+            "name": "Bắp cải xanh tươi - 300g",
+            "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/cabbage.png"
+          },
+          {
+            "id": 3,
+            "extra_price": 0,
+            "name": "Kem sô cô la mát lạnh - 500ml",
+            "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/creamy.png"
+          },
+          {
+            "id": 4,
+            "extra_price": 0,
+            "name": "Bánh quy bơ Danisa - 200g",
+            "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/danisa.png"
+          }
+        ]
+      },
+      {
+        "name": "Chọn loại bánh thứ 4",
+        "items": [
+          {
+            "id": 2,
+            "extra_price": 20000,
+            "name": "Bắp cải xanh tươi - 300g",
+            "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/cabbage.png"
+          },
+          {
+            "id": 3,
+            "extra_price": 0,
+            "name": "Kem sô cô la mát lạnh - 500ml",
+            "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/creamy.png"
+          },
+          {
+            "id": 4,
+            "extra_price": 0,
+            "name": "Bánh quy bơ Danisa - 200g",
+            "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/danisa.png"
+          }
+        ]
+      }
+    ]
   },
   {
     "id": 2,
@@ -34,6 +129,7 @@
     "originalPrice": 300000,
     "image": "https://zalo-miniapp.github.io/zaui-market/dummy/product/danisa.png",
     "detail": "Bánh quy bơ giòn tan, thơm lừng hương bơ tự nhiên, hoàn hảo cho bữa trà chiều."
+    
   },
   {
     "id": 5,

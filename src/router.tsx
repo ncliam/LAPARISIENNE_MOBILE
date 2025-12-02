@@ -3,6 +3,7 @@ import CartPage from "@/pages/cart";
 import CategoryDetailPage from "@/pages/catalog/category-detail";
 import CategoryListPage from "@/pages/catalog/category-list";
 import ProductDetailPage from "@/pages/catalog/product-detail";
+import ProductComboPage from "@/pages/catalog/product-combo";
 import HomePage from "@/pages/home";
 import ProfilePage from "@/pages/profile";
 import SearchPage from "@/pages/search";
@@ -106,6 +107,15 @@ const router = createBrowserRouter(
           element: <ProductDetailPage />,
           handle: {
             scrollRestoration: 0, // when user selects another product in related products, scroll to the top of the page
+            noFloatingCart: true,
+          },
+        },
+        {
+          path: "/combo/:id",
+          element: <ProductComboPage />,
+          handle: {
+            title: "Tuỳ chọn",
+            scrollRestoration: 0,
             noFloatingCart: true,
           },
         },

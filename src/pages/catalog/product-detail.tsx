@@ -71,6 +71,12 @@ export default function ProductDetailPage() {
         <Button
           variant="tertiary"
           onClick={() => {
+            if (product?.combo) {
+                navigate(`/combo/${product.id}`, {
+                  viewTransition: true,
+                });
+                return;
+            } 
             addToCart(1, {
               toast: true,
             });

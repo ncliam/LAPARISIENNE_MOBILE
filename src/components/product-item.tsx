@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { Button } from "zmp-ui";
 import { useComputePrice, useAddToCart } from "@/hooks";
 import QuantityInput from "./quantity-input";
+import { useNavigate } from "react-router-dom";
 
 export interface ProductItemProps {
   product: Product;
@@ -17,6 +18,7 @@ export interface ProductItemProps {
 
 export default function ProductItem(props: ProductItemProps) {
   const [selected, setSelected] = useState(false);
+  const navigate = useNavigate();
   const { addToCart, cartQuantity } = useAddToCart(props.product);
   const computePrice = useComputePrice();
   const displayedPrice = useMemo(() => {
@@ -94,6 +96,12 @@ export default function ProductItem(props: ProductItemProps) {
             fullWidth
             onClick={(e) => {
               e.stopPropagation();
+              if (props.product?.combo) {
+                  navigate(`/combo/${props.product.id}`, {
+                    viewTransition: true,
+                  });
+                  return;
+              }
               handleQuantityChange(1, {
                 toast: false,
               });

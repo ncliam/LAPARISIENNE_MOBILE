@@ -14,7 +14,7 @@ import {
   deliveryFeeState,
   sessionState
 } from "@/state";
-import { Product } from "@/types";
+import { Product, ComboItem } from "@/types";
 import { getConfig } from "@/utils/template";
 import { authorize, openChat, getSetting, Payment, CheckoutSDK, getPhoneNumber } from "zmp-sdk";
 import { useAtomCallback } from "jotai/utils";
@@ -83,6 +83,13 @@ export function useComputePrice() {
   }
 } 
 
+type AddToCartOptions = {
+  toast?: boolean;
+  unitPriceOverride?: number;
+  comboSelections?: ComboItem[];
+  detail?: string;
+};
+
 export function useAddToCart(product: Product) {
   const [cart, setCart] = useAtom(cartState);
   const computePrice = useComputePrice();
@@ -94,25 +101,47 @@ export function useAddToCart(product: Product) {
 
   const addToCart = (
     quantity: number | ((oldQuantity: number) => number),
-    options?: { toast: boolean }
+    options?: AddToCartOptions
   ) => {
     setCart((cart) => {
+      const itemIndex = cart.findIndex((item) => item.product.id === product.id);
+      const targetItem = itemIndex >= 0 ? cart[itemIndex] : undefined;
+      const currentQuantity = targetItem?.quantity ?? currentCartItem?.quantity ?? 0;
       const newQuantity =
-        typeof quantity === "function"
-          ? quantity(currentCartItem?.quantity ?? 0)
-          : quantity;
+        typeof quantity === "function" ? quantity(currentQuantity) : quantity;
       if (newQuantity <= 0) {
-        cart.splice(cart.indexOf(currentCartItem!), 1);
+        if (itemIndex >= 0) {
+          cart.splice(itemIndex, 1);
+        }
       } else {
-        const newPrice = computePrice(product, newQuantity);
-        if (currentCartItem) {
-          currentCartItem.quantity = newQuantity;
-          currentCartItem.unitprice = newPrice;
+        let newPrice: number;
+        if (options?.unitPriceOverride !== undefined) {
+          newPrice = options.unitPriceOverride;
+        } else if ((targetItem ?? currentCartItem)?.comboSelections?.length) {
+          newPrice = (targetItem ?? currentCartItem)!.unitprice;
+        } else {
+          newPrice = computePrice(product, newQuantity);
+        }
+
+        if (itemIndex >= 0) {
+          cart[itemIndex] = {
+            ...cart[itemIndex],
+            quantity: newQuantity,
+            unitprice: newPrice,
+            comboSelections:
+              options?.comboSelections ?? cart[itemIndex].comboSelections,
+            detail:
+              options?.detail !== undefined
+                ? options.detail
+                : cart[itemIndex].detail,
+          };
         } else {
           cart.push({
             product,
             unitprice: newPrice,
             quantity: newQuantity,
+            comboSelections: options?.comboSelections,
+            detail: options?.detail,
           });
         }
       }
