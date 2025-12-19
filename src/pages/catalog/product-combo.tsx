@@ -96,15 +96,12 @@ export default function ProductComboPage() {
         </div>
       </div>
       <div className="w-full p-4 pb-2 space-y-4 bg-section">
-        <div className="flex items-center justify-between w-full">
+        <div className="flex flex-wrap items-center justify-center gap-4 w-full">
           {choices.map((choice, index) => {
             const isCompleted = index < state.currentComboIndex;
             const isActive = index === state.currentComboIndex;
             return (
-              <div
-                className="flex items-center flex-1 last:flex-none"
-                key={`${choice.name}-${index}`}
-              >
+              <div className="flex items-center" key={`${choice.name}-${index}`}>
                 <div
                   className={`w-8 h-8 flex items-center justify-center rounded-full border font-semibold text-2xs ${
                     isCompleted
@@ -118,7 +115,7 @@ export default function ProductComboPage() {
                 </div>
                 {index < choices.length - 1 && (
                   <div
-                    className={`flex-1 h-0.5 mx-2 ${
+                    className={`w-10 h-0.5 mx-3 ${
                       index < state.currentComboIndex ? "bg-primary" : "bg-line"
                     }`}
                   />

@@ -17,9 +17,38 @@ function OrderItem(props: CartItem) {
         </div>
       }
     >
-      <div className="text-sm">{props.detail || props.product.name}</div>
-      <div className="text-sm font-bold mt-1">
-        {formatPrice(props.unitprice || props.product.price)}
+      <div className="space-y-1">
+        <div className="text-sm">{props.product.name}</div>
+        {props.comboSelections?.length ? (
+          <div className="space-y-1 text-3xs text-subtitle">
+            {props.comboSelections.map((combo, index) => (
+              <div
+                className="flex items-center justify-between"
+                key={`${combo.id}-${index}`}
+              >
+                <span className="pr-2">{combo.name}</span>
+                <div className="flex items-center space-x-2">
+                  {combo.extra_price > 0 ? (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                      + {formatPrice(combo.extra_price)}
+                    </span>
+                  ) : (
+                    <span className="text-line"></span>
+                  )}
+                  <span className="text-primary font-medium">x1</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : null}
+        {props.detail && (
+          <div className="text-3xs text-subtitle">
+            Ghi chú: {props.detail}
+          </div>
+        )}
+        <div className="text-sm font-bold">
+          {formatPrice(props.unitprice || props.product.price)}
+        </div>
       </div>
     </List.Item>
   );

@@ -178,6 +178,8 @@ async function createOrder(cart, delivery, sessionInfo) {
     name: item.product.name,
     unitprice: item.unitprice,
     quantity: item.quantity,
+    comboSelections: item.comboSelections,
+    detail: item.detail,
   }));
   const payload = {
       lines: lines,

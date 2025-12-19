@@ -14,7 +14,7 @@
   "listAsyncJS": [],
   "template": {
     "name": "zaui-market",
-    "apiUrl_test": "http://127.0.0.1:5001/nclservice/us-central1/lpr/shop",
+    "apiUrl_test": "http://127.0.0.1:5001/nclservice/us-central1/lpr",
     "apiUrl": "https://lpr-cbpn2ubpmq-uc.a.run.app/shop",
     "oaIDtoOpenChat": "",
     "logoUrl": "https://raw.githubusercontent.com/ncliam/PUBLIC_ASSETS/dc922c487adc129032ec235724dac23d462463a2/laparisenne_logo.png",
