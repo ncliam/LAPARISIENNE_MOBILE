@@ -7,11 +7,11 @@ import {
   cartTotalState,
   userInfoKeyState,
   userInfoState,
+  unwrapUserInfoState,
   deliveryModeState,
   selectedStationState,
   shippingAddressState,
   allOrdersState,
-  deliveryFeeState,
   sessionState
 } from "@/state";
 import { Product, ComboItem } from "@/types";
@@ -170,7 +170,7 @@ export function useToBeImplemented() {
     });
 }
 
-async function createOrder(cart, delivery, sessionInfo) {
+async function createOrder(cart, delivery, userInfo, sessionInfo) {
   const path = "/orders"; // API endpoint
   // Get delivery-related states
   const lines = cart.map((item) => ({
@@ -182,14 +182,15 @@ async function createOrder(cart, delivery, sessionInfo) {
     detail: item.detail,
   }));
   const payload = {
-      lines: lines,
+      customer: userInfo,
       delivery: delivery,
+      lines: lines
   }; // Data to send in the POST request
-  
+
   let options = {
     headers: {
         "Content-Type": "application/json",
-        "X-Session-Info": JSON.stringify(sessionInfo), 
+        "X-Session-Info": JSON.stringify(sessionInfo),
     },
   };
   
@@ -234,8 +235,11 @@ export function useCheckout() {
     const refreshNewOrders = useSetAtom(allOrdersState);
     const cartTotal = useAtomValue(cartTotalState); // Total amount of the cart
     // const deliveryFee = useAtomValue(deliveryFeeState); // Delivery fee
+    const userInfo = useAtomValue(unwrapUserInfoState); // User info
     const sessionInfo = useAtomValue(sessionState); // User session
     const navigate = useNavigate();
+    console.log('**************')
+    console.log(userInfo)
     
   return async () => {
     const delivery =  {
@@ -272,39 +276,43 @@ export function useCheckout() {
       }
 
 
-      const { method, isCustom } = await Payment.selectPaymentMethod({
+      // Gọi API mở trang lựa chọn phương thức thanh toán
+      Payment.selectPaymentMethod({
+        success: (data) => {
+          // Lựa chọn phương thức thành công
+          const { method } = data;
+          // Sử dụng {id: method, isCustom: isCustom} truyền vào field method trong API createOrder.
+          CheckoutSDK.purchase({
+            desc: "Thanh toán COD",
+            amount: cartTotal.totalAmount,
+            method: method,
+            success: async(data) => {
+              // Tạo đơn hàng thành công
+              await createOrder(cart, delivery, userInfo, sessionInfo);
+              setCart([]);
+              refreshNewOrders();
+              navigate("/orders", {
+                viewTransition: true,
+              });
+              toast.success("Đặt đơn thành công. Cảm ơn bạn đã ủng hộ!", {
+                icon: "🎉",
+                duration: 2000,
+              });
+            },
+            fail: (err) => {
+              // Tạo đơn hàng lỗi
+              console.log(err);
+              toast.error("Có lỗi không đặt được đơn hàng", {
+                duration: 2000,
+              });
+            },
+          });
+        },
         fail: (err) => {
           // Tắt trang lựa chọn phương thức hoặc xảy ra lỗi
           console.log(err);
         },
       });
-
-
-      CheckoutSDK.purchase({
-        desc: "Thanh toán COD",
-        amount: cartTotal.totalAmount,
-        method: "COD",
-        success: async(data) => {
-          // Tạo đơn hàng thành công
-          const { orderId } = data;
-          await createOrder(cart, delivery, sessionInfo);
-          setCart([]);
-          refreshNewOrders();
-          navigate("/orders", {
-            viewTransition: true,
-          });
-          toast.success("Đặt đơn thành công. Cảm ơn bạn đã ủng hộ!", {
-            icon: "🎉",
-            duration: 2000,
-          });
-        },
-        fail: (err) => {
-          // Tạo đơn hàng lỗi
-          console.log(err);
-        },
-      });
-
-      
     } catch (error) {
       console.error(error);
       toast.error("Có lỗi không đặt được đơn hàng", {

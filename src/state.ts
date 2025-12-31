@@ -50,6 +50,8 @@ export const userInfoState = atom<Promise<UserInfo>>(async (get) => {
 
 export const loadableUserInfoState = loadable(userInfoState);
 
+export const unwrapUserInfoState = unwrap(userInfoState, (prev) => prev ?? {});
+
 
 export const bannersState = atom(() =>
   requestWithFallback<string[]>("/banners", [])
@@ -131,7 +133,7 @@ export const productsByCategoryState = atomFamily((id: String) =>
 
 export const stationsState = atom(async () => {
   const response = await requestWithFallback<{}>("/stations", {});
-  const stations = response['data'] || [];
+  const stations = response['data'] || response || [];
   return stations;
 });
 
