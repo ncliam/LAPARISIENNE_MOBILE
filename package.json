@@ -17,7 +17,7 @@
   "scripts": {
     "start": "zmp start",
     "dev": "vite",
-    "build": "vite build",
+    "build": "cross-env WEB_BUILD=true vite build",
     "preview": "vite preview",
     "deploy": "zmp deploy",
     "build:zalo": "zmp deploy",

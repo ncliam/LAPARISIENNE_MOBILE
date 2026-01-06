@@ -1,7 +1,6 @@
-import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { auth, googleProvider, signInWithPopup, signInWithPhoneNumber, RecaptchaVerifier, type ConfirmationResult } from '@/utils/firebase';
-import { Button, Icon } from 'zmp-ui';
+import { auth, googleProvider, signInWithPopup } from '@/utils/firebase';
+import { Button } from 'zmp-ui';
 import toast from 'react-hot-toast';
 import CONFIG from '@/config';
 import { useSetAtom } from 'jotai';
@@ -9,9 +8,6 @@ import { userInfoKeyState } from '@/state';
 import { useKyc } from '@/hooks';
 
 export default function LoginPage() {
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [verificationCode, setVerificationCode] = useState('');
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const setUserInfoKey = useSetAtom(userInfoKeyState);
@@ -56,67 +52,6 @@ export default function LoginPage() {
     }
   };
 
-  // Phone Sign-In (OTP)
-  const handlePhoneLogin = async () => {
-    if (!auth) {
-      toast.error('Firebase chưa được cấu hình');
-      return;
-    }
-
-    try {
-      // Setup reCAPTCHA
-      if (!(window as any).recaptchaVerifier) {
-        (window as any).recaptchaVerifier = new RecaptchaVerifier(
-          auth,
-          'recaptcha-container',
-          { size: 'invisible' }
-        );
-      }
-
-      const appVerifier = (window as any).recaptchaVerifier;
-      const confirmation = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-      setConfirmationResult(confirmation);
-      toast.success('Mã OTP đã được gửi!');
-    } catch (error) {
-      console.error(error);
-      toast.error('Gửi OTP thất bại');
-    }
-  };
-
-  const handleVerifyOTP = async () => {
-    if (!confirmationResult) {
-      toast.error('Vui lòng gửi OTP trước');
-      return;
-    }
-
-    try {
-      const result = await confirmationResult.confirm(verificationCode);
-      const user = result.user;
-
-      localStorage.setItem(CONFIG.STORAGE_KEYS.USER_INFO, JSON.stringify({
-        id: user.uid,
-        name: user.phoneNumber || "Anonymous",
-        avatar: CONFIG.DEFAULT_AVATAR,
-        phone: user.phoneNumber || "",
-        email: '',
-        address: ''
-      }));
-
-      // Trigger userInfo state refresh
-      setUserInfoKey((key) => key + 1);
-
-      // Authenticate with backend to get session info
-      await kyc();
-
-      toast.success('Xác thực thành công!');
-      // Navigate back to return URL
-      navigate(returnUrl, { replace: true });
-    } catch (error) {
-      console.error(error);
-      toast.error('Mã OTP không đúng');
-    }
-  };
-
   return (
     <div className="p-4 max-w-md mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-center">Đăng nhập</h1>
@@ -143,40 +78,26 @@ export default function LoginPage() {
         <div className="absolute top-1/2 left-0 right-0 h-px bg-gray-300 -z-0"></div>
       </div>
 
-      {/* Phone Sign-In */}
-      {!confirmationResult ? (
-        <div className="space-y-3">
-          <input
-            type="tel"
-            placeholder="+84 xxx xxx xxx"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-          <Button onClick={handlePhoneLogin} fullWidth variant="secondary">
-            Gửi mã OTP
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <input
-            type="text"
-            placeholder="Nhập mã OTP"
-            value={verificationCode}
-            onChange={(e) => setVerificationCode(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-          />
-          <Button onClick={handleVerifyOTP} fullWidth variant="primary">
-            Xác nhận
-          </Button>
-          <button
-            onClick={() => setConfirmationResult(null)}
-            className="w-full text-sm text-gray-600 hover:text-gray-800"
-          >
-            Gửi lại mã OTP
-          </button>
-        </div>
-      )}
+      {/* Phone Sign-In - Coming Soon */}
+      <div className="space-y-3 opacity-60">
+        <input
+          type="tel"
+          placeholder="+84 xxx xxx xxx"
+          disabled
+          className="w-full p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+        />
+        <Button
+          onClick={() => toast('Tính năng đăng nhập bằng số điện thoại sẽ được hỗ trợ sớm', { icon: '🚧' })}
+          fullWidth
+          variant="secondary"
+          disabled
+        >
+          Gửi mã OTP (Chưa hỗ trợ)
+        </Button>
+        <p className="text-center text-sm text-gray-500">
+          Tính năng đang phát triển
+        </p>
+      </div>
 
       <div id="recaptcha-container"></div>
 
