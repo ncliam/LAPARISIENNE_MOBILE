@@ -2,17 +2,36 @@ import { ShareDecor } from "@/components/vectors";
 import { Product } from "@/types";
 import { openShareSheet } from "zmp-sdk";
 import { Icon } from "zmp-ui";
+import { isZalo } from "@/utils/platform";
+import toast from "react-hot-toast";
 
 export default function ShareButton(props: { product: Product }) {
   const share = () => {
-    openShareSheet({
-      type: "zmp_deep_link",
-      data: {
-        title: props.product.name,
-        thumbnail: props.product.image,
-        path: `/product/${props.product.id}`,
-      },
-    });
+    // ZALO MODE: Use Zalo share sheet
+    if (isZalo()) {
+      openShareSheet({
+        type: "zmp_deep_link",
+        data: {
+          title: props.product.name,
+          thumbnail: props.product.image,
+          path: `/product/${props.product.id}`,
+        },
+      });
+    }
+    // WEB MODE: Use Web Share API
+    else {
+      if (navigator.share) {
+        navigator.share({
+          title: props.product.name,
+          text: `Xem sản phẩm ${props.product.name}`,
+          url: window.location.href,
+        }).catch(console.error);
+      } else {
+        // Fallback: copy link to clipboard
+        navigator.clipboard.writeText(window.location.href);
+        toast.success("Đã copy link vào clipboard!");
+      }
+    }
   };
 
   return (

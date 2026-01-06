@@ -14,6 +14,7 @@ import ShippingAddressPage from "./pages/cart/shipping-address";
 import StationsPage from "./pages/cart/stations";
 import OrderDetailPage from "./pages/orders/detail";
 import ProfileEditorPage from "./pages/profile/editor";
+import LoginPage from "./pages/auth/login";
 
 const router = createBrowserRouter(
   [
@@ -126,6 +127,15 @@ const router = createBrowserRouter(
             search: true,
             title: "Tìm kiếm",
             noFooter: true,
+          },
+        },
+        {
+          path: "/login",
+          element: <LoginPage />,
+          handle: {
+            title: "Đăng nhập",
+            noFooter: true,
+            noFloatingCart: true,
           },
         },
       ],

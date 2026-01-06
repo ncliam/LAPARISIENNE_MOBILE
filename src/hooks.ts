@@ -12,7 +12,8 @@ import {
   selectedStationState,
   shippingAddressState,
   allOrdersState,
-  sessionState
+  sessionState,
+  productsKeyState
 } from "@/state";
 import { Product, ComboItem } from "@/types";
 import { getConfig } from "@/utils/template";
@@ -20,6 +21,8 @@ import { authorize, openChat, getSetting, Payment, CheckoutSDK, getPhoneNumber }
 import { useAtomCallback } from "jotai/utils";
 import { requestWithPost, requestWithFallback } from "@/utils/request";
 import { getAccessToken } from "zmp-sdk/apis";
+import { isZalo } from "@/utils/platform";
+import { auth } from "@/utils/firebase";
 
 
 export function useRealHeight(
@@ -46,6 +49,7 @@ export function useRealHeight(
 }
 
 export function useRequestInformation() {
+  const navigate = useNavigate();
   const hasUserInfo = useAtomCallback(async (get) => {
     const userInfo = await get(userInfoState);
     return !!userInfo;
@@ -57,12 +61,18 @@ export function useRequestInformation() {
   return async () => {
     const hadUserInfo = await hasUserInfo();
     if (!hadUserInfo) {
-      await authorize({
-        scopes: ["scope.userInfo", "scope.userPhonenumber"],
-      }).then(refreshPermissions);
-      kyc();
+      // ZALO MODE: Request permissions
+      if (isZalo()) {
+        await authorize({
+          scopes: ["scope.userInfo", "scope.userPhonenumber"],
+        }).then(refreshPermissions);
+        kyc();
+      }
+      // WEB MODE: Redirect to login
+      else {
+        navigate('/login');
+      }
     }
-    
   };
 }
 
@@ -156,11 +166,51 @@ export function useAddToCart(product: Product) {
 }
 
 export function useCustomerSupport() {
-  return () =>
-    openChat({
-      type: "oa",
-      id: getConfig((config) => config.template.oaIDtoOpenChat),
-    });
+  return () => {
+    // ZALO MODE: Open Zalo chat with OA
+    if (isZalo()) {
+      openChat({
+        type: "oa",
+        id: getConfig((config) => config.template.oaIDtoOpenChat),
+      });
+    }
+    // WEB MODE: Open email or chat widget
+    else {
+      window.location.href = 'mailto:support@laparisienne.com';
+    }
+  };
+}
+
+export function useLogout() {
+  const navigate = useNavigate();
+  const setSession = useSetAtom(sessionState);
+
+  return async () => {
+    try {
+      // WEB MODE: Sign out from Firebase
+      if (!isZalo() && auth) {
+        await auth.signOut();
+      }
+
+      // Clear all user data from localStorage
+      localStorage.removeItem('userInfo');
+      localStorage.removeItem('session');
+
+      // Clear session state
+      setSession(null);
+
+      toast.success('Đã đăng xuất');
+
+      // Redirect to home
+      navigate('/', { replace: true });
+
+      // Reload to reset all states
+      window.location.reload();
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Có lỗi khi đăng xuất');
+    }
+  };
 }
 
 export function useToBeImplemented() {
@@ -204,22 +254,38 @@ async function createOrder(cart, delivery, userInfo, sessionInfo) {
 
 export function useKyc() {
   const setSession = useSetAtom(sessionState);
+  const setProductsKey = useSetAtom(productsKeyState);
+
   return async () => {
-    const accessToken = await getAccessToken();
-    const { token } = await getPhoneNumber({});
+    let headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+
+    // ZALO MODE: Use Zalo tokens
+    if (isZalo()) {
+      const accessToken = await getAccessToken();
+      const { token } = await getPhoneNumber({});
+      headers["X-Zalo-AccessToken"] = accessToken || "dummy";
+      headers["X-Zalo-PhoneToken"] = token || "dummy";
+    }
+    // WEB MODE: Use Firebase ID token
+    else {
+      const user = auth?.currentUser;
+      if (user) {
+        const idToken = await user.getIdToken();
+        headers["X-Firebase-Token"] = idToken;
+      }
+    }
+
     const sessionInfo = await requestWithFallback<any>("/authenticate",
       {},
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Zalo-AccessToken": accessToken || "dummy",
-          "X-Zalo-PhoneToken": token || "dummy",
-        },
-      }
+      { method: "POST", headers }
     );
+
     if (Object.keys(sessionInfo).length > 0) {
         setSession(sessionInfo);
+        // Refresh products to update prices based on customer's pricing tier
+        setProductsKey((key) => key + 1);
     } else {
         setSession(null);
     }
@@ -229,95 +295,91 @@ export function useKyc() {
 export function useCheckout() {
     const [cart, setCart] = useAtom(cartState);
     const requestInfo = useRequestInformation();
-    const deliveryMode = useAtomValue(deliveryModeState); // "shipping" or other modes
-    const selectedStation = useAtomValue(selectedStationState); // Selected station info
-    const shippingAddress = useAtomValue(shippingAddressState); // Shipping address if delivery mode is "shipping"
+    const deliveryMode = useAtomValue(deliveryModeState);
+    const selectedStation = useAtomValue(selectedStationState);
+    const shippingAddress = useAtomValue(shippingAddressState);
     const refreshNewOrders = useSetAtom(allOrdersState);
-    const cartTotal = useAtomValue(cartTotalState); // Total amount of the cart
-    // const deliveryFee = useAtomValue(deliveryFeeState); // Delivery fee
-    const userInfo = useAtomValue(unwrapUserInfoState); // User info
-    const sessionInfo = useAtomValue(sessionState); // User session
+    const cartTotal = useAtomValue(cartTotalState);
+    const userInfo = useAtomValue(unwrapUserInfoState);
+    const sessionInfo = useAtomValue(sessionState);
     const navigate = useNavigate();
-    console.log('**************')
-    console.log(userInfo)
-    
+
+  // Helper function to complete order after payment
+  const completeOrder = async (delivery: any) => {
+    await createOrder(cart, delivery, userInfo, sessionInfo);
+    setCart([]);
+    refreshNewOrders();
+    navigate("/orders", { viewTransition: true });
+    toast.success("Đặt đơn thành công. Cảm ơn bạn đã ủng hộ!", {
+      icon: "🎉",
+      duration: 2000,
+    });
+  };
+
   return async () => {
-    const delivery =  {
+    const delivery = {
       mode: deliveryMode,
       station: selectedStation,
       address: shippingAddress,
-      fee: 0 //deliveryFee
-    }
-    
+      fee: 0
+    };
+
     try {
+      // Validation
       if (!selectedStation) {
-        toast.error("Bạn chưa chọn cửa hàng nào", {
-          duration: 2000,
-        });
+        toast.error("Bạn chưa chọn cửa hàng nào", { duration: 2000 });
         return;
       }
       if (!shippingAddress && deliveryMode == 'shipping') {
-        toast.error("Bạn chưa nhập địa chỉ nhận hàng", {
-          duration: 2000,
-        });
+        toast.error("Bạn chưa nhập địa chỉ nhận hàng", { duration: 2000 });
         return;
       }
+
       await requestInfo();
-      const {
-        authSetting: {
-          "scope.userInfo": grantedUserInfo
-        },
-      } = await getSetting({});
-      if (!grantedUserInfo) {
-        toast.error("Bạn cần cho chúng tôi quyền lấy số điện thoại để xác nhận đơn hàng", {
-          duration: 2000,
+
+      // ZALO MODE: Use Zalo Payment
+      if (isZalo()) {
+        const {
+          authSetting: { "scope.userInfo": grantedUserInfo },
+        } = await getSetting({});
+
+        if (!grantedUserInfo) {
+          toast.error("Bạn cần cho chúng tôi quyền lấy số điện thoại để xác nhận đơn hàng", {
+            duration: 2000,
+          });
+          return;
+        }
+
+        // Gọi API mở trang lựa chọn phương thức thanh toán
+        Payment.selectPaymentMethod({
+          success: (data) => {
+            const { method } = data;
+            CheckoutSDK.purchase({
+              desc: "Thanh toán COD",
+              amount: cartTotal.totalAmount,
+              method: method,
+              success: async(data) => {
+                await completeOrder(delivery);
+              },
+              fail: (err) => {
+                console.log(err);
+                toast.error("Có lỗi không đặt được đơn hàng", { duration: 2000 });
+              },
+            });
+          },
+          fail: (err) => {
+            console.log(err);
+          },
         });
-        return;
       }
 
-
-      // Gọi API mở trang lựa chọn phương thức thanh toán
-      Payment.selectPaymentMethod({
-        success: (data) => {
-          // Lựa chọn phương thức thành công
-          const { method } = data;
-          // Sử dụng {id: method, isCustom: isCustom} truyền vào field method trong API createOrder.
-          CheckoutSDK.purchase({
-            desc: "Thanh toán COD",
-            amount: cartTotal.totalAmount,
-            method: method,
-            success: async(data) => {
-              // Tạo đơn hàng thành công
-              await createOrder(cart, delivery, userInfo, sessionInfo);
-              setCart([]);
-              refreshNewOrders();
-              navigate("/orders", {
-                viewTransition: true,
-              });
-              toast.success("Đặt đơn thành công. Cảm ơn bạn đã ủng hộ!", {
-                icon: "🎉",
-                duration: 2000,
-              });
-            },
-            fail: (err) => {
-              // Tạo đơn hàng lỗi
-              console.log(err);
-              toast.error("Có lỗi không đặt được đơn hàng", {
-                duration: 2000,
-              });
-            },
-          });
-        },
-        fail: (err) => {
-          // Tắt trang lựa chọn phương thức hoặc xảy ra lỗi
-          console.log(err);
-        },
-      });
+      // WEB MODE: COD only (or integrate Stripe/PayPal later)
+      else {
+        await completeOrder(delivery);
+      }
     } catch (error) {
       console.error(error);
-      toast.error("Có lỗi không đặt được đơn hàng", {
-        duration: 2000,
-      });
+      toast.error("Có lỗi không đặt được đơn hàng", { duration: 2000 });
     }
   };
 }

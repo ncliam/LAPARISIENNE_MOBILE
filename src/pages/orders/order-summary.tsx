@@ -48,7 +48,7 @@ function OrderSummary(props: { order: Order; full?: boolean }) {
       </div>
       <HorizontalDivider />
       <div className="flex justify-between items-center px-4 py-2 space-x-4">
-        <div className="text-xs">Tổng tiền hàng</div>
+        <div className="text-xs">Tổng trước thuế</div>
         <div className="text-sm font-medium">
           {formatPrice(props.order.total)}
         </div>

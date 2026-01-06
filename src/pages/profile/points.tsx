@@ -32,14 +32,22 @@ export default function Points() {
                   </div>
                 </div>
             )}
-          {sessionInfo && (
+          {sessionInfo && (sessionInfo?.ref || sessionInfo?.customer_phone || sessionInfo?.customer_email) && (
                 <div className="text-2xs text-subtitle text-center">
-                  <QRcode value={sessionInfo?.ref || sessionInfo?.customer_phone } />
+                  <QRcode value={sessionInfo.ref || sessionInfo.customer_phone || sessionInfo.customer_email} />
                   <div className="mt-3">
-                    {sessionInfo?.property_product_pricelist[1] || 'Giá niêm yết'} 
+                    {sessionInfo?.property_product_pricelist[1] || 'Giá niêm yết'}
                   </div>
                 </div>
-                
+
+            )}
+          {sessionInfo && !(sessionInfo?.ref || sessionInfo?.customer_phone || sessionInfo?.customer_email) && (
+                <div className="text-2xs text-subtitle text-center">
+                  <QRcode value='unknown' fgColor="#cccc" />
+                  <div className="mt-3">
+                    Giá niêm yết (Chưa có mã)
+                  </div>
+                </div>
             )}
           <Button onClick={async () => {
             await kyc();

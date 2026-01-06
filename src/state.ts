@@ -18,33 +18,70 @@ import { calculateDistance } from "./utils/location";
 import CONFIG from "./config";
 import { getAccessToken } from "zmp-sdk/apis";
 import { Engine } from 'json-rules-engine';
+import { isZalo } from "@/utils/platform";
+import { auth } from "@/utils/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 
 
 export const userInfoKeyState = atom(0);
 
 export const userInfoState = atom<Promise<UserInfo>>(async (get) => {
+  // Trigger re-evaluation when userInfoKeyState changes
+  get(userInfoKeyState);
+
   const savedUserInfo = localStorage.getItem(CONFIG.STORAGE_KEYS.USER_INFO);
   if (savedUserInfo) {
     return JSON.parse(savedUserInfo);
   }
 
-  const {
-    authSetting: {
-      "scope.userInfo": grantedUserInfo
-    },
-  } = await getSetting({});
-  
-  const isDev = !window.ZJSBridge;
-  if (grantedUserInfo || isDev) {
-    // Người dùng cho phép truy cập tên và ảnh đại diện
-    const { userInfo } = await getUserInfo({});
-    return {
-      id: userInfo.id,
-      name: userInfo.name,
-      avatar: userInfo.avatar,
-      email: "",
-      address: ""
-    };
+  // ZALO MODE: Use Zalo SDK
+  if (isZalo()) {
+    const {
+      authSetting: {
+        "scope.userInfo": grantedUserInfo
+      },
+    } = await getSetting({});
+
+    const isDev = !window.ZJSBridge;
+    if (grantedUserInfo || isDev) {
+      // Người dùng cho phép truy cập tên và ảnh đại diện
+      const { userInfo } = await getUserInfo({});
+      return {
+        id: userInfo.id,
+        name: userInfo.name,
+        avatar: userInfo.avatar || CONFIG.DEFAULT_AVATAR,
+        phone: "",
+        email: "",
+        address: ""
+      };
+    }
+    // Not granted - return null to trigger auth flow
+    return null as any;
+  }
+
+  // WEB MODE: Check Firebase Auth
+  else {
+    if (!auth) {
+      // No auth configured - return null to trigger login
+      return null as any;
+    }
+    return new Promise((resolve) => {
+      onAuthStateChanged(auth!, (user) => {
+        if (user) {
+          resolve({
+            id: user.uid,
+            name: user.displayName || "Anonymous",
+            avatar: user.photoURL || CONFIG.DEFAULT_AVATAR,
+            phone: user.phoneNumber || "",
+            email: user.email || "",
+            address: ""
+          });
+        } else {
+          // Not logged in - return null to trigger login redirect
+          resolve(null as any);
+        }
+      });
+    });
   }
 });
 
@@ -70,7 +107,13 @@ export const categoriesStateUpwrapped = unwrap(
   (prev) => prev ?? []
 );
 
+// Key to trigger products refresh (e.g., after session/pricing changes)
+export const productsKeyState = atom(0);
+
 export const productsState = atom(async (get) => {
+  // Trigger re-evaluation when productsKeyState changes
+  get(productsKeyState);
+
   const categories = await get(categoriesState);
   const products = await requestWithFallback<
     (Product & { categoryId: number })[]
@@ -138,20 +181,40 @@ export const stationsState = atom(async () => {
 });
 
 export const stationStateWithDistance = atom(async () => {
-  const accessToken = await getAccessToken();
-  const { token } = await getLocation({});
-
-  let options = {
-    headers: {
-        "Content-Type": "application/json",
-        "X-Zalo-AccessToken": accessToken || 'dummy',
-        "X-Zalo-LocationToken": token || 'dummy',
-    }
+  let headers: Record<string, string> = {
+    "Content-Type": "application/json",
   };
 
-  const response = await requestWithFallback<{}>("/stations", {}, options);
+  // ZALO MODE: Use Zalo location API
+  if (isZalo()) {
+    const accessToken = await getAccessToken();
+    const { token } = await getLocation({});
+    headers["X-Zalo-AccessToken"] = accessToken || 'dummy';
+    headers["X-Zalo-LocationToken"] = token || 'dummy';
+  }
+  // WEB MODE: Use Browser Geolocation API
+  else {
+    let userLocation: {lat: number, lng: number} | null = null;
+    if (navigator.geolocation) {
+      userLocation = await new Promise<{lat: number, lng: number} | null>((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => resolve({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          }),
+          () => resolve(null)
+        );
+      });
+    }
+    if (userLocation) {
+      headers["X-User-Location"] = JSON.stringify(userLocation);
+    }
+  }
+
+  const response = await requestWithFallback<{}>("/stations", {}, { headers });
   const stations = response['data'] || [];
-  let location = response['customer_location']
+  let location = response['customer_location'];
+
   if (location) {
     location = location as Location;
   }
