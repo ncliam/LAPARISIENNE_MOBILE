@@ -15,6 +15,7 @@ import StationsPage from "./pages/cart/stations";
 import OrderDetailPage from "./pages/orders/detail";
 import ProfileEditorPage from "./pages/profile/editor";
 import LoginPage from "./pages/auth/login";
+import DebugEnvPage from "./pages/debug-env";
 
 const router = createBrowserRouter(
   [
@@ -134,6 +135,15 @@ const router = createBrowserRouter(
           element: <LoginPage />,
           handle: {
             title: "Đăng nhập",
+            noFooter: true,
+            noFloatingCart: true,
+          },
+        },
+        {
+          path: "/debug-env",
+          element: <DebugEnvPage />,
+          handle: {
+            title: "Debug Environment",
             noFooter: true,
             noFloatingCart: true,
           },
