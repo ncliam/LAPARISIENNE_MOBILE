@@ -16,12 +16,12 @@ import {
 import { isWeb } from './platform';
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "your-api-key",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "your-app.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "your-project-id",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "your-app.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "your-app-id"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBhIdFZZtrYkLRbXzP8-G2D6X2VjocDJl4",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "nclservice.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "nclservice",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "nclservice.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "1029347494118",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:1029347494118:web:280d59719cd636286d1327"
 };
 
 // Initialize Firebase only for web
