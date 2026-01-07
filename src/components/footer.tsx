@@ -47,7 +47,7 @@ export default function Footer() {
       <>
         <HorizontalDivider />
         <div
-          className="w-full px-4 pt-2 grid pb-sb"
+          className="w-full px-4 md:max-w-screen-xl md:mx-auto pt-2 grid pb-sb"
           style={{
             gridTemplateColumns: `repeat(${NAV_ITEMS.length}, 1fr)`,
           }}

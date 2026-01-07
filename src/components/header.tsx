@@ -40,7 +40,7 @@ export default function Header() {
         backgroundImage: `url(${headerIllus})`,
       }}
     >
-      <div className="w-full min-h-12 pr-[90px] flex py-2 space-x-2 items-center">
+      <div className="w-full min-h-12 pr-[90px] md:max-w-screen-xl md:mx-auto flex py-2 space-x-2 items-center">
         {handle?.logo ? (
           <>
             <img
@@ -72,7 +72,7 @@ export default function Header() {
         )}
       </div>
       {handle?.search && (
-        <div className="w-full py-2 flex space-x-2">
+        <div className="w-full md:max-w-screen-xl md:mx-auto py-2 flex space-x-2">
           <SearchBar
             onFocus={() => {
               if (location.pathname !== "/search") {

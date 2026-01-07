@@ -75,7 +75,7 @@ function Delivery() {
 
   return (
     <Section title="Hình thức giao hàng" className="rounded-lg">
-      <div className="grid grid-cols-2 gap-4 p-4 pt-2">
+      <div className="grid grid-cols-2 md:max-w-md md:mx-auto gap-4 p-4 pt-2">
         {(
           [
             {

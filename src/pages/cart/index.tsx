@@ -16,14 +16,16 @@ export default function CartPage() {
   }
   return (
     <div className="w-full h-full flex flex-col">
-      <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
+      <div className="flex-1 overflow-y-auto px-4 md:max-w-screen-xl md:mx-auto py-2 space-y-2">
         <CartList />
         {/* <ApplyVoucher /> */}
         <CartSummary />
         <Delivery />
       </div>
       <HorizontalDivider />
-      <Pay />
+      <div className="md:max-w-screen-xl md:mx-auto">
+        <Pay />
+      </div>
     </div>
   );
 }

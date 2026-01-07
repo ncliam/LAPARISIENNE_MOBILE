@@ -335,6 +335,16 @@ export function useCheckout() {
         return;
       }
 
+      // WEB MODE: Check if user is authenticated before checkout
+      if (!isZalo()) {
+        const currentUser = auth?.currentUser;
+        if (!currentUser) {
+          toast.error("Bạn cần đăng nhập để đặt hàng", { duration: 2000 });
+          navigate('/login');
+          return;
+        }
+      }
+
       await requestInfo();
 
       // ZALO MODE: Use Zalo Payment
