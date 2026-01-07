@@ -36,7 +36,7 @@ export default function ShareButton(props: { product: Product }) {
 
   return (
     <button
-      className="relative w-full h-10 rounded-lg cursor-pointer overflow-hidden"
+      className="relative w-full md:w-auto md:self-start h-10 rounded-lg cursor-pointer overflow-hidden md:px-6"
       onClick={share}
     >
       <div className="absolute inset-0 bg-[var(--zaui-light-button-secondary-background)] opacity-50" />
